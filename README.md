@@ -28,7 +28,9 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
+    background: #0a0a0f;
     background: var(--bg);
+    color: #e8e8f0;
     color: var(--text);
     font-family: 'DM Mono', monospace;
     min-height: 100vh;
@@ -53,7 +55,7 @@
   .bg-blob-3 { width: 300px; height: 300px; background: var(--accent3); top: 40%; left: 50%; transform: translateX(-50%); opacity: .08; }
 
   /* ── LAYOUT ── */
-  .wrapper { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 0 24px 60px; }
+  .wrapper { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 0 24px 60px; background: #0a0a0f; background: var(--bg); }
 
   /* ── HEADER ── */
   header {
@@ -305,18 +307,20 @@
   }
   .matrix-section-title::after { content:''; flex:1; height:1px; background:var(--border); }
 
-  .matrix-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
-  .matrix-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 720px; }
+  .matrix-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid #2a2a3a; border: 1px solid var(--border); }
+  .matrix-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 720px; background: #111118; background: var(--surface); }
   .matrix-table th {
     padding: 14px 18px; font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700;
-    letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted);
-    border-bottom: 1px solid var(--border); background: var(--surface2);
+    letter-spacing: .08em; text-transform: uppercase; color: #7070a0; color: var(--text-muted);
+    border-bottom: 1px solid #2a2a3a; border-bottom: 1px solid var(--border);
+    background: #18181f; background: var(--surface2);
     text-align: center; white-space: nowrap;
   }
   .matrix-table th:first-child { text-align: left; width: 100px; }
   .matrix-table td {
     padding: 0; border-bottom: 1px solid rgba(42,42,58,.5);
     border-right: 1px solid rgba(42,42,58,.4); vertical-align: top;
+    background: #111118; background: var(--surface);
   }
   .matrix-table td:last-child { border-right: none; }
   .matrix-table tr:last-child td { border-bottom: none; }
@@ -324,8 +328,9 @@
 
   .matrix-period {
     padding: 12px 18px; font-size: 11px; font-weight: 600;
-    color: var(--text-muted); letter-spacing: .05em; text-transform: uppercase;
-    background: var(--surface2); border-right: 1px solid var(--border);
+    color: #7070a0; color: var(--text-muted); letter-spacing: .05em; text-transform: uppercase;
+    background: #18181f; background: var(--surface2);
+    border-right: 1px solid #2a2a3a; border-right: 1px solid var(--border);
     white-space: nowrap; vertical-align: middle;
   }
 
@@ -3064,41 +3069,98 @@
   <!-- BACKUP & LINK                                    -->
   <!-- ═══════════════════════════════════════════════ -->
   <div class="backup-section">
-    <div class="section-title">💾 Backup & Acesso</div>
+    <div class="section-title">💾 Backup & Sincronização</div>
     <div class="backup-grid">
 
-      <!-- BACKUP CARD -->
+      <!-- LOCAL BACKUP -->
       <div class="backup-card">
-        <div class="backup-card-title">💾 Salvar / Restaurar Tudo</div>
-        <p>Exporte um arquivo com <strong>todos os seus dados</strong> — matérias, grade, histórico, revisões Anki e flashcards. Use para fazer backup ou transferir para outro dispositivo.</p>
-        <div class="backup-stats" id="backupStats"><!-- populated by JS --></div>
+        <div class="backup-card-title">💾 Backup Local</div>
+        <p>Exporte todos os seus dados — matérias, grade, histórico, Anki e flashcards.</p>
+        <div class="backup-stats" id="backupStats"></div>
         <div class="backup-btn-row">
-          <button class="btn-backup btn-backup-save" onclick="exportBackup()">⬇ Baixar Backup</button>
+          <button class="btn-backup btn-backup-save" onclick="exportBackup()">⬇ Baixar .json</button>
           <label class="btn-backup btn-backup-load" style="cursor:pointer">
-            ⬆ Restaurar Backup
+            ⬆ Restaurar .json
             <input type="file" accept=".json" style="display:none" onchange="importBackup(event)">
           </label>
-          <button class="btn-backup btn-backup-reset" onclick="resetAllData()">🗑 Resetar Tudo</button>
+          <button class="btn-backup btn-backup-reset" onclick="resetAllData()">🗑 Resetar</button>
         </div>
-        <p style="font-size:10px;color:var(--text-dim)">⚡ Seus dados são salvos automaticamente no navegador. Faça backups periódicos para não perder nada ao limpar o cache.</p>
+      </div>
+
+      <!-- GITHUB GIST SYNC -->
+      <div class="backup-card" style="border-color:rgba(124,92,252,.3);background:rgba(124,92,252,.04)">
+        <div class="backup-card-title" style="color:var(--accent)">☁️ Sincronização GitHub Gist</div>
+        <p>Salve seus dados na nuvem via GitHub Gist — gratuito, funciona em qualquer dispositivo, sem servidor.</p>
+
+        <!-- Status -->
+        <div id="gistStatus" style="display:flex;align-items:center;gap:8px;margin:10px 0;font-size:11px;
+          padding:8px 12px;border-radius:6px;background:var(--surface2);border:1px solid var(--border)">
+          <span id="gistStatusDot" style="width:8px;height:8px;border-radius:50%;background:#555;flex-shrink:0"></span>
+          <span id="gistStatusText">Não configurado</span>
+        </div>
+
+        <!-- Token input -->
+        <div id="gistSetupArea">
+          <div style="font-size:10px;color:var(--text-dim);margin-bottom:6px;text-transform:uppercase;letter-spacing:.07em">
+            GitHub Personal Access Token (gist scope)
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <input type="password" id="gistTokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+              style="flex:1;min-width:180px;background:var(--surface);border:1px solid var(--border);
+                border-radius:6px;padding:8px 12px;color:var(--text);font-family:'DM Mono',monospace;
+                font-size:11px;outline:none"
+              oninput="gistTokenChanged()">
+            <button class="btn-backup btn-backup-save" onclick="gistSalvarToken()" style="white-space:nowrap">
+              ✓ Salvar token
+            </button>
+          </div>
+          <p style="font-size:10px;color:var(--text-dim);margin-top:6px;line-height:1.5">
+            💡 Crie em <strong style="color:var(--accent)">github.com → Settings → Developer settings → Personal access tokens → Fine-grained</strong>.
+            Marque apenas o escopo <strong style="color:var(--accent)">gist</strong>.
+          </p>
+        </div>
+
+        <!-- Gist ID (auto-criado) -->
+        <div id="gistIdArea" style="display:none;margin-top:8px">
+          <div style="font-size:10px;color:var(--text-dim);margin-bottom:4px;text-transform:uppercase;letter-spacing:.07em">Gist ID (compartilhável)</div>
+          <div style="display:flex;gap:6px">
+            <input type="text" id="gistIdInput" placeholder="cole um Gist ID existente"
+              style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:6px;
+                padding:6px 10px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;outline:none">
+            <button class="btn-backup btn-backup-load" onclick="gistUsarId()" style="white-space:nowrap;font-size:10px">Usar ID</button>
+          </div>
+        </div>
+
+        <!-- Sync buttons -->
+        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap" id="gistBtnArea">
+          <button class="btn-backup btn-backup-save" onclick="gistSalvar()" id="gistBtnSalvar" style="display:none">
+            ☁️ Salvar na nuvem
+          </button>
+          <button class="btn-backup btn-backup-load" onclick="gistCarregar()" id="gistBtnCarregar" style="display:none">
+            ⬇ Carregar da nuvem
+          </button>
+          <button class="btn-backup" onclick="gistDesconectar()" id="gistBtnDesconectar"
+            style="display:none;border-color:rgba(252,92,125,.3);color:var(--hard);background:transparent;font-size:10px">
+            Desconectar
+          </button>
+        </div>
+
+        <!-- Last sync info -->
+        <div id="gistLastSync" style="font-size:10px;color:var(--text-dim);margin-top:8px"></div>
       </div>
 
       <!-- LINK CARD -->
-      <div class="backup-card">
+      <div class="backup-card" style="grid-column:1/-1">
         <div class="backup-card-title">🔗 Link do Programa</div>
-        <p>Copie o endereço abaixo para acessar o StudyFlow de qualquer lugar, adicionar aos favoritos ou compartilhar.</p>
+        <p>Copie o endereço para acessar de qualquer lugar ou compartilhar.</p>
         <div class="link-box">
           <input type="text" id="programLink" readonly value="Carregando...">
           <button class="btn-copy" onclick="copyLink()">📋 Copiar</button>
         </div>
-        <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
           <button class="btn-backup btn-backup-load" onclick="openInNewTab()" style="width:fit-content">
             🌐 Abrir em nova aba
           </button>
-          <p style="font-size:11px;color:var(--text-muted)">
-            💡 Para favoritar: pressione <strong style="color:var(--text)">Ctrl+D</strong> (Windows) ou <strong style="color:var(--text)">Cmd+D</strong> (Mac) no navegador.
-            Se o link mudar, basta copiar o novo endereço aqui e atualizar o favorito.
-          </p>
         </div>
       </div>
 
@@ -6387,6 +6449,273 @@ function resetAllData() {
   setTimeout(() => location.reload(), 1200);
 }
 
+// ══════════════════════════════════════════════════
+// ☁️ GITHUB GIST — SINCRONIZAÇÃO NA NUVEM
+// ══════════════════════════════════════════════════
+
+const GIST_TOKEN_KEY = 'sf_gist_token';
+const GIST_ID_KEY    = 'sf_gist_id';
+const GIST_LAST_KEY  = 'sf_gist_last';
+const GIST_FILE      = 'studyflow_backup.json';
+const GIST_API       = 'https://api.github.com/gists';
+
+// ── Helpers ──
+function gistGetToken() { return localStorage.getItem(GIST_TOKEN_KEY) || ''; }
+function gistGetId()    { return localStorage.getItem(GIST_ID_KEY)    || ''; }
+
+function gistUpdateStatus(type, msg) {
+  const dot  = document.getElementById('gistStatusDot');
+  const text = document.getElementById('gistStatusText');
+  if (!dot || !text) return;
+  const colors = { ok:'#5cf0b0', error:'#fc5c7d', loading:'#fcb85c', none:'#555' };
+  dot.style.background  = colors[type] || '#555';
+  text.textContent      = msg;
+}
+
+function gistTokenChanged() {
+  const v = document.getElementById('gistTokenInput')?.value.trim();
+  // Show/hide by typing
+}
+
+// ── Setup ──
+function gistInitUI() {
+  const token = gistGetToken();
+  const id    = gistGetId();
+  const last  = localStorage.getItem(GIST_LAST_KEY);
+
+  const tokenInput = document.getElementById('gistTokenInput');
+  const idArea     = document.getElementById('gistIdArea');
+  const idInput    = document.getElementById('gistIdInput');
+  const btnSalvar  = document.getElementById('gistBtnSalvar');
+  const btnCarregar= document.getElementById('gistBtnCarregar');
+  const btnDescon  = document.getElementById('gistBtnDesconectar');
+  const lastEl     = document.getElementById('gistLastSync');
+
+  if (!token) {
+    gistUpdateStatus('none', 'Não configurado — cole seu token abaixo');
+    if (btnSalvar)   btnSalvar.style.display   = 'none';
+    if (btnCarregar) btnCarregar.style.display  = 'none';
+    if (btnDescon)   btnDescon.style.display    = 'none';
+    if (idArea)      idArea.style.display       = 'none';
+    return;
+  }
+
+  // Token exists
+  if (tokenInput) tokenInput.value = token.substring(0, 6) + '••••••••••••••';
+  if (idArea)     idArea.style.display = 'block';
+  if (idInput && id) idInput.value = id;
+  if (btnSalvar)   btnSalvar.style.display   = '';
+  if (btnCarregar) btnCarregar.style.display  = '';
+  if (btnDescon)   btnDescon.style.display    = '';
+
+  if (id) {
+    gistUpdateStatus('ok', `Conectado · Gist: ${id.substring(0,12)}...`);
+  } else {
+    gistUpdateStatus('loading', 'Token salvo — clique ☁️ Salvar para criar seu Gist');
+  }
+
+  if (last && lastEl) {
+    const d = new Date(parseInt(last));
+    lastEl.textContent = `Última sync: ${d.toLocaleDateString('pt-BR')} às ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
+  }
+}
+
+function gistSalvarToken() {
+  const input = document.getElementById('gistTokenInput');
+  const val   = input?.value.trim();
+  if (!val || val.includes('•')) {
+    showToast('Cole um token válido (ghp_...)', 'warn');
+    return;
+  }
+  if (!val.startsWith('ghp_') && !val.startsWith('github_pat_')) {
+    showToast('Token inválido. Deve começar com ghp_ ou github_pat_', 'warn');
+    return;
+  }
+  localStorage.setItem(GIST_TOKEN_KEY, val);
+  gistInitUI();
+  showToast('✓ Token salvo! Clique ☁️ Salvar na nuvem', 'ok');
+}
+
+function gistUsarId() {
+  const input = document.getElementById('gistIdInput');
+  const val   = input?.value.trim();
+  if (!val) { showToast('Cole um Gist ID', 'warn'); return; }
+  localStorage.setItem(GIST_ID_KEY, val);
+  gistInitUI();
+  showToast('✓ Gist ID configurado! Clique ⬇ Carregar', 'ok');
+}
+
+function gistDesconectar() {
+  if (!confirm('Desconectar da nuvem? Seus dados locais não serão apagados.')) return;
+  localStorage.removeItem(GIST_TOKEN_KEY);
+  localStorage.removeItem(GIST_ID_KEY);
+  localStorage.removeItem(GIST_LAST_KEY);
+  const inp = document.getElementById('gistTokenInput');
+  if (inp) inp.value = '';
+  gistInitUI();
+  showToast('Desconectado da nuvem', 'warn');
+}
+
+// ── Save to Gist ──
+async function gistSalvar() {
+  const token = gistGetToken();
+  if (!token) { showToast('Configure o token primeiro', 'warn'); return; }
+
+  gistUpdateStatus('loading', 'Salvando na nuvem...');
+  const btn = document.getElementById('gistBtnSalvar');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Salvando...'; }
+
+  try {
+    // Force save everything first
+    sfSaveAll();
+
+    const payload = JSON.stringify(getAllData(), null, 2);
+    const id      = gistGetId();
+
+    let res, data;
+    if (id) {
+      // Update existing gist
+      res = await fetch(`${GIST_API}/${id}`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description: `StudyFlow Backup — ${new Date().toLocaleString('pt-BR')}`,
+          files: { [GIST_FILE]: { content: payload } }
+        })
+      });
+    } else {
+      // Create new gist
+      res = await fetch(GIST_API, {
+        method: 'POST',
+        headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description: 'StudyFlow Pro — Backup automático',
+          public: false,
+          files: { [GIST_FILE]: { content: payload } }
+        })
+      });
+    }
+
+    if (!res.ok) {
+      const err = await res.json().catch(()=>({}));
+      throw new Error(err.message || `HTTP ${res.status}`);
+    }
+
+    data = await res.json();
+    const newId = data.id;
+    localStorage.setItem(GIST_ID_KEY, newId);
+    localStorage.setItem(GIST_LAST_KEY, Date.now().toString());
+
+    // Show gist ID to user
+    const idInput = document.getElementById('gistIdInput');
+    if (idInput) idInput.value = newId;
+
+    gistUpdateStatus('ok', `✓ Salvo! Gist: ${newId.substring(0,12)}...`);
+    gistInitUI();
+    showToast('☁️ Dados salvos na nuvem!', 'ok');
+
+  } catch(e) {
+    gistUpdateStatus('error', `Erro: ${e.message}`);
+    showToast(`Erro ao salvar: ${e.message}`, 'warn');
+    console.error('Gist save error:', e);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '☁️ Salvar na nuvem'; }
+  }
+}
+
+// ── Load from Gist ──
+async function gistCarregar() {
+  const token = gistGetToken();
+  const id    = gistGetId();
+  if (!token) { showToast('Configure o token primeiro', 'warn'); return; }
+  if (!id)    { showToast('Faça uma primeira sync para criar o Gist', 'warn'); return; }
+
+  if (!confirm('Carregar dados da nuvem?\n\nIsso irá sobrescrever os dados locais atuais com os dados salvos na nuvem.')) return;
+
+  gistUpdateStatus('loading', 'Carregando da nuvem...');
+  const btn = document.getElementById('gistBtnCarregar');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Carregando...'; }
+
+  try {
+    const res = await fetch(`${GIST_API}/${id}`, {
+      headers: { 'Authorization': `token ${token}` }
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(()=>({}));
+      throw new Error(err.message || `HTTP ${res.status}`);
+    }
+
+    const gistData = await res.json();
+    const fileContent = gistData.files?.[GIST_FILE]?.content;
+    if (!fileContent) throw new Error('Arquivo não encontrado no Gist');
+
+    const data = JSON.parse(fileContent);
+
+    // Import all data (reuse importBackup logic)
+    await gistImportData(data);
+    localStorage.setItem(GIST_LAST_KEY, Date.now().toString());
+
+    gistUpdateStatus('ok', `✓ Dados carregados da nuvem`);
+    gistInitUI();
+    showToast('☁️ Dados carregados da nuvem!', 'ok');
+
+    // Reload after 1.5s to apply all data
+    setTimeout(() => location.reload(), 1500);
+
+  } catch(e) {
+    gistUpdateStatus('error', `Erro: ${e.message}`);
+    showToast(`Erro ao carregar: ${e.message}`, 'warn');
+    console.error('Gist load error:', e);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '⬇ Carregar da nuvem'; }
+  }
+}
+
+// ── Apply loaded data ──
+async function gistImportData(data) {
+  if (!data || !data.version) throw new Error('Formato de backup inválido');
+
+  // Save everything to localStorage
+  if (data.subjectsMatrix) {
+    localStorage.setItem('sf_subjectsMatrix', JSON.stringify(data.subjectsMatrix));
+  }
+  if (data.studyHistory) {
+    localStorage.setItem('sf_studyHistory', JSON.stringify(data.studyHistory));
+  }
+  if (data.ankiEntries) {
+    localStorage.setItem('sf_ankiEntries', JSON.stringify(data.ankiEntries));
+  }
+  if (data.fcData) {
+    localStorage.setItem('sf_fcData_v2', JSON.stringify(data.fcData));
+  }
+  if (data.hoursData) {
+    localStorage.setItem('sf_hoursData', JSON.stringify(data.hoursData));
+  }
+  if (data.planejamentos) {
+    localStorage.setItem('sf_planejamento_v1', JSON.stringify(data.planejamentos));
+  }
+  if (data.sessoes) {
+    localStorage.setItem('sf_sessoes_v1', JSON.stringify(data.sessoes));
+  }
+  // Save master state
+  const state = { v:3, ts:Date.now(), ...data };
+  localStorage.setItem('sf_fullState_v3', JSON.stringify(state));
+}
+
+// ── Auto-sync on save (optional, triggered after every sfSaveAll) ──
+let gistAutoSyncTimer = null;
+function gistScheduleAutoSync() {
+  if (!gistGetToken() || !gistGetId()) return; // only if configured
+  clearTimeout(gistAutoSyncTimer);
+  gistAutoSyncTimer = setTimeout(() => {
+    gistSalvar().catch(() => {}); // silent fail on auto-sync
+  }, 30000); // sync 30s after last change
+}
+
+// Init gist UI on load
+setTimeout(gistInitUI, 500);
+
 
 // ══════════════════════════════════════════════════
 // PERSISTENT STATE — saves & restores EVERYTHING
@@ -6444,6 +6773,8 @@ function sfSaveAll() {
       sessoes:         (() => { try { return JSON.parse(localStorage.getItem('sf_sessoes_v1')||'{}'); } catch(e) { return {}; } })(),
     };
     localStorage.setItem(SF_KEY, JSON.stringify(state));
+    // Schedule cloud auto-sync if configured
+    if (typeof gistScheduleAutoSync === 'function') gistScheduleAutoSync();
   } catch(e) { console.warn('sfSaveAll error:', e); }
 }
 
